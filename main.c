@@ -11,6 +11,16 @@ struct matrix
     float *table;
 };
 
+int countNewLines(FILE *);
+void initMatrix(matrix *, int);
+bool loadMatrix(matrix *, char *);
+void showMatrix(matrix *);
+void fillMatrix(matrix *);
+void freeMatrix(matrix *);
+void fillMinor(matrix *, matrix *, int );
+float determinant(matrix *);
+
+
 int countNewLines(FILE *f)
 {
     int checkpoint = ftell(f);
@@ -44,8 +54,8 @@ bool loadMatrix(matrix *ptr, char *path)
         fclose(f);
         return false;
     }
-
-    if(fscanf(f, "%d", &ptr->rows) != 1 || ptr->rows <= 0)
+    int size = 0;
+    if(fscanf(f, "%d", &size) != 1 || size <= 0)
     {
         fclose(f);
         return false;
@@ -55,8 +65,9 @@ bool loadMatrix(matrix *ptr, char *path)
         fclose(f);
         return false;
     }
-    initMatrix(ptr, ptr->rows);
-    int x = 0, y = 0, expectedLines = 0;
+    freeMatrix(ptr);
+    initMatrix(ptr, size);
+    int x = 0, y = 0, expectedLines = 0, loaded = 0;
     float a = 0;
     for(y = 0; y < ptr->rows; ++y)
     {
@@ -70,6 +81,7 @@ bool loadMatrix(matrix *ptr, char *path)
                 return false;
             }
             *(ptr->table + x + y * ptr->cols) = a;
+            ++loaded;
         }
     }
     /*
@@ -125,7 +137,6 @@ void fillMatrix(matrix *ptr)
 
 void freeMatrix(matrix *ptr)
 {
-    if(ptr->table == NULL) return;
     free(ptr->table);
     ptr->cols = 0;
     ptr->rows = 0;
