@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdbool.h>
+#define NEW_LINE_SYMBOL '\n'
 typedef struct matrix matrix;
 
 struct matrix
@@ -9,6 +10,20 @@ struct matrix
     int rows, cols;
     float *table;
 };
+
+int countNewLines(FILE *f)
+{
+    int checkpoint = ftell(f);
+    int lines = 0;
+    char c;
+    do {
+        c = fgetc(f);
+        if(c == NEW_LINE_SYMBOL)
+        ++lines;
+    } while(c == ' ' || c == '\t' || c == NEW_LINE_SYMBOL);
+    fseek(f, checkpoint, 0);
+    return lines;
+}
 
 void initMatrix(matrix *ptr, int x)
 {
@@ -23,78 +38,44 @@ bool loadMatrix(matrix *ptr, char *path)
 {
     FILE *f = fopen(path, "r");
     if(!f) return false;
-	int a = 0;
-	while(fgetc(f) == '\r')
-	{
-		++a;
-	}
-	if(a)
-	{
-		printf("a");
+    initMatrix(ptr, 0);
+    if(countNewLines(f) != 0)
+    {
         fclose(f);
         return false;
-	}
-	rewind(f);
+    }
+
     if(fscanf(f, "%d", &ptr->rows) != 1 || ptr->rows <= 0)
     {
         fclose(f);
         return false;
     }
-    
-    char temp, space[2], ee;
-    space[1] = '\0';
-    initMatrix(ptr, ptr->rows);
-    int i = 0, j = 0;
-	long offset;
-	offset = ftell(f);
-	do
-	{
-		ee = fgetc(f);
-		if(ee == '\r') ++a;
-	}while(ee == ' ' || ee == '\r' || ee == '\t');
-	if(a != 1)
-	{
-		fclose(f);
-		return false;
-	}
-	fseek(f, offset, 0);
-    for(i = 0; i < ptr->rows; ++i)
+    if(countNewLines(f) != 1)
     {
-		for(j = 0; j < ptr->cols; ++j)
-		{
-			fseek(f, offset, 0);
-			if(fscanf(f, "%f", ptr->table + j + i * ptr->cols) != 1)
-			{
-				fclose(f);
-				return false;
-			}
-			offset = ftell(f);
-			a = 0;
-			do
-			{
-				ee = fgetc(f);
-				if(ee == '\r') ++a;
-			}while(ee == ' ' || ee == '\r' || ee == '\t');
-			if(a > 1)
-			{
-				fclose(f);
-				return false;
-			}
-			
-			
-		}
-		
-		if(i != ptr->rows - 1)
-		if(fscanf(f, "\r") != 1)
-		{
-			fclose(f);
-			return false;
-		}
+        fclose(f);
+        return false;
+    }
+    initMatrix(ptr, ptr->rows);
+    int x = 0, y = 0, expectedLines = 0;
+    float a = 0;
+    for(y = 0; y < ptr->rows; ++y)
+    {
+        for(x = 0; x < ptr->cols; ++x)
+        {
+            if(x == ptr->cols - 1) expectedLines = 1;
+            else expectedLines = 0;
+            if(fscanf(f, "%f", &a) != 1 || countNewLines(f) != expectedLines)
+            {
+                fclose(f);
+                return false;
+            }
+            *(ptr->table + x + y * ptr->cols) = a;
+        }
     }
     /*
     for(i = 0; i < ptr->cols * ptr->rows; ++i)
     {
-        if(fscanf(f, "%d", &j) != 1)
+        if(fscanf(f, "%f", &j) != 1)
         {
             fclose(f);
             return false;
@@ -102,7 +83,7 @@ bool loadMatrix(matrix *ptr, char *path)
         *(ptr->table + i) = j;
     }
     */
-    if(i != ptr->cols * ptr->rows || fscanf(f, "%d", &j) != EOF)
+    if(fscanf(f, "%f", &a) != EOF)
     {
         printf("wrond number of numbers\n");
         fclose(f);
@@ -144,6 +125,7 @@ void fillMatrix(matrix *ptr)
 
 void freeMatrix(matrix *ptr)
 {
+    if(ptr->table == NULL) return;
     free(ptr->table);
     ptr->cols = 0;
     ptr->rows = 0;
