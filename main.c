@@ -19,6 +19,7 @@ void fillMatrix(matrix *);
 void freeMatrix(matrix *);
 void fillMinor(matrix *, matrix *, int );
 float determinant(matrix *);
+bool checke(FILE *);
 
 
 int countNewLines(FILE *f)
@@ -37,8 +38,13 @@ int countNewLines(FILE *f)
 
 void initMatrix(matrix *ptr, int x)
 {
-    int i;
     ptr->rows = ptr->cols = x;
+    if(x == 0)
+    {
+        ptr->table = NULL;
+        return;
+    }
+    int i;
     ptr->table = (float *)malloc(x * x * (int)sizeof(float));
     for(i = 0; i < x * x; ++i)
         *(ptr->table + i) = 0.0f;
@@ -137,7 +143,7 @@ void fillMatrix(matrix *ptr)
 
 void freeMatrix(matrix *ptr)
 {
-    free(ptr->table);
+    if(ptr->table) free(ptr->table);
     ptr->cols = 0;
     ptr->rows = 0;
 }
@@ -154,6 +160,24 @@ void fillMinor(matrix *ptr, matrix *minor, int ignoreCol)
         }
     }
 }
+
+bool checke(FILE *f)
+{
+    rewind(f);
+    char c;
+    while((c = fgetc(f)) != EOF)
+    {
+        printf("checking: %c\n", c);
+        if(c == 'e')
+        {
+            printf("Wrong symbol: %c\n", c);
+            return true;
+        }
+    }
+    rewind(f);
+    return false;
+}
+
 
 float determinant(matrix *ptr)
 {
