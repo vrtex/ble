@@ -385,21 +385,6 @@ macierze =
             8 +  5i   10 +  6i   12 +  7i
            14 +  8i   16 +  9i   18 + 10i
 
- >> AB(size(AB, 1) - 1: end, size(AB, 2) - 1: end, size(AB, 3) - 1: end) *= 2
- AB =
-
- ans(:,:,1) =
-
-     1    2    3
-     4   10   12
-     7   16   18
-
- ans(:,:,2) =
-
-     1 +  2i    2 +  3i    3 +  4i
-     4 +  5i   10 + 12i   12 + 14i
-     7 +  8i   16 + 18i   18 + 20i
-
 >> macierze.A.content + c_AB{1, 2}
 
 ans =
